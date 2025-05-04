@@ -12,8 +12,9 @@ mitto provides a simple API around application event handling
 
 ## Summary
 
-Mitto (Latin verb meaning "to send") implements a simple way to manage a set of listeners and
-dispatch application events to those listeners.
+`mitto` (Latin verb meaning "to send") implements a simple way to manage a set of listeners and
+dispatch application events to those listeners. `mitto` is primarily intended for code which
+sends events to clients, where clients supply one or more listeners.
 
 ## Table of Contents
 
@@ -24,7 +25,67 @@ dispatch application events to those listeners.
 
 ## Usage
 
-TBD
+The easiest way to use `mitto` is to include it in a type that manages events and listeners:
+
+```go
+import github.com/xmidt-org/mitto
+
+type Event {
+    // stuff
+}
+
+type MyListener interface {
+    OnEvent(Event)
+}
+
+type MyService struct {
+    // could also use mitto.Listeners if concurrency is
+    // managed by MyService or some other means.
+    listeners mitto.SyncListeners[Event]
+}
+
+func (s *MyService) AddListeners(l ...MyListener) {
+    mitto.AddListeners(&s.listeners, l...)
+}
+
+func (s *MyService) RemoveListeners(l ...MyListener) {
+    mitto.RemoveListeners(&s.listeners, l...)
+}
+
+func (s *MyService) DoSomething() {
+    // time to send an event:
+    s.listeners.Send(Event{
+        // stuff
+    })
+}
+```
+
+`mitto` allows closures to be used as event sinks.
+
+```go
+func (s *MyService) AddListenerFuncs(l ...func(Event)) {
+    s.listeners.AddListenerFuncs(l...)
+}
+```
+
+When using closures, remember that `golang` does not allow comparisons between functions. That means that you can't remove a listener closure later. For cases where a listener closure needs to be removed at some point, `mitto` provides `AsListener` to convert a closure into a comparable `Listener`.
+
+```go
+l := mitto.AsListener(func(Event) {})
+s := new(MyService)
+s.AddListeners(l)
+
+// this will now work
+s.RemoveListeners(l)
+```
+
+`mitto` also allows channel-based listeners. **Clients are responsible for creating and managing channels to avoid blocking.**
+
+```go
+func (s *MyService) AddListenerChans(ch ...chan<- E) {
+    s.listeners.AddListenerChans(ch...)
+}
+```
 
 ## Code of Conduct
 
