@@ -7,7 +7,7 @@ package mitto
 // collection of Listeners and dispatch events to them.
 //
 // A Dispatcher implementation must be safe for concurrent access. Any
-// of the methods on this interface may be called atomically at any time.
+// of the methods on this interface may be called concurrently at any time.
 type Dispatcher[E any] interface {
 	// Clear removes all listeners from this dispatcher.
 	Clear()

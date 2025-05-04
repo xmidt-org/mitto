@@ -54,6 +54,8 @@ func (ls *Listeners[E]) RemoveListeners(toRemove ...Listener[E]) {
 	}
 }
 
+// Send dispatches an event to all contained listeners. Listener implementations
+// should be prepared to receive events concurrently.
 func (ls *Listeners[E]) Send(e E) {
 	for _, l := range ls.all {
 		l.OnEvent(e)
