@@ -41,3 +41,49 @@ type Dispatcher[E any] interface {
 	// with this dispatcher.
 	Send(E)
 }
+
+// AddListeners adds custom listeners to a dispatcher. The custom listener type
+// can be anything that implements Listener[E], rather than being exactly Listener[E].
+func AddListeners[E any, L Listener[E]](d Dispatcher[E], ls ...L) {
+	switch len(ls) {
+	case 0:
+		// do nothing
+
+	case 1:
+		// simple optimization
+		d.AddListeners(ls[0])
+
+	default:
+		// we want to make adding a chunk of listeners atomic in the
+		// case where AddListeners is synchronized
+		more := make([]Listener[E], len(ls))
+		for i, l := range ls {
+			more[i] = l
+		}
+
+		d.AddListeners(more...)
+	}
+}
+
+// RemoveListeners removes custom listeners from a dispatcher. The custom listener type
+// can be anything that implements Listener[E], rather than being exactly Listener[E].
+func RemoveListeners[E any, L Listener[E]](d Dispatcher[E], ls ...L) {
+	switch len(ls) {
+	case 0:
+		// do nothing
+
+	case 1:
+		// simple optimization
+		d.RemoveListeners(ls[0])
+
+	default:
+		// we want to make adding a chunk of listeners atomic in the
+		// case where AddListeners is synchronized
+		more := make([]Listener[E], len(ls))
+		for i, l := range ls {
+			more[i] = l
+		}
+
+		d.RemoveListeners(more...)
+	}
+}
