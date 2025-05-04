@@ -41,5 +41,6 @@ func AsListener[E any, F ListenerFunc[E]](f F) Listener[E] {
 type ListenerChan[E any] chan<- E
 
 // OnEvent puts the event onto the channel. This method will block
-// will block if the channel's queue is full or was created with no queue.
+// as long as it takes to send the event to the channel. Clients should
+// manage channels to reduce or avoid blocking.
 func (lc ListenerChan[E]) OnEvent(e E) { lc <- e }

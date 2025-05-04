@@ -12,30 +12,39 @@ type SyncListeners[E any] struct {
 	listeners Listeners[E]
 }
 
+// Clear atomically removes all listeners.
 func (sl *SyncListeners[E]) Clear() {
 	sl.lock.Lock()
 	sl.listeners.Clear()
 	sl.lock.Unlock()
 }
 
+// AddListeners adds more listeners. This method ensures that no event can be sent
+// until adding these listeners completes.
 func (sl *SyncListeners[E]) AddListeners(toAdd ...Listener[E]) {
 	sl.lock.Lock()
 	sl.listeners.AddListeners(toAdd...)
 	sl.lock.Unlock()
 }
 
+// AddListenerFuncs adds listener closures. This method ensures that no event can be sent
+// until adding these closures completes.
 func (sl *SyncListeners[E]) AddListenerFuncs(toAdd ...func(E)) {
 	sl.lock.Lock()
 	sl.listeners.AddListenerFuncs(toAdd...)
 	sl.lock.Unlock()
 }
 
+// AddListenerChans adds listener channels. This method ensures that no event can be sent
+// until adding these channels completes.
 func (sl *SyncListeners[E]) AddListenerChans(toAdd ...chan<- E) {
 	sl.lock.Lock()
 	sl.listeners.AddListenerChans(toAdd...)
 	sl.lock.Unlock()
 }
 
+// RemoveListeners removes the given listeners. This method ensures that no event
+// can be sent until removing these listeners completes.
 func (sl *SyncListeners[E]) RemoveListeners(toRemove ...Listener[E]) {
 	sl.lock.Lock()
 	sl.listeners.RemoveListeners(toRemove...)
