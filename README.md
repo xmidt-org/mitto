@@ -6,8 +6,7 @@ mitto provides a simple API around application event handling
 [![codecov.io](http://codecov.io/github/xmidt-org/mitto/coverage.svg?branch=main)](http://codecov.io/github/xmidt-org/mitto?branch=main)
 [![Go Report Card](https://goreportcard.com/badge/github.com/xmidt-org/mitto)](https://goreportcard.com/report/github.com/xmidt-org/mitto)
 [![Apache V2 License](http://img.shields.io/badge/license-Apache%20V2-blue.svg)](https://github.com/xmidt-org/mitto/blob/main/LICENSE)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=xmidt-org_PROJECT&metric=alert_status)](https://sonarcloud.io/dashboard?id=xmidt-org_PROJECT)
-[![GitHub release](https://img.shields.io/github/release/xmidt-org/mitto.svg)](CHANGELOG.md)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=xmidt-org_mitto&metric=alert_status)](https://sonarcloud.io/dashboard?id=xmidt-org_mitto)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/xmidt-org/mitto)](https://pkg.go.dev/github.com/xmidt-org/mitto)
 
 ## Summary
