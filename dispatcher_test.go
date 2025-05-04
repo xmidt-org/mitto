@@ -131,6 +131,17 @@ func (suite *DispatcherTestSuite[E, D]) TestEmpty() {
 }
 
 func (suite *DispatcherTestSuite[E, D]) TestAddListeners() {
+	suite.Run("Empty", func() {
+		var tests []*testListener[E]
+		d := suite.factory()
+
+		AddListeners(d, tests...) // should add nothing
+		d.Send(suite.testEvent)
+
+		RemoveListeners(d, tests...)
+		d.Send(suite.testEvent)
+	})
+
 	for _, count := range []int{1, 2, 5} {
 		suite.Run(fmt.Sprintf("count=%d", count), func() {
 			tests := suite.newTestListeners(count)
