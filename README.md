@@ -81,7 +81,7 @@ s.RemoveListeners(l)
 `mitto` also allows channel-based listeners. **Clients are responsible for creating and managing channels to avoid blocking.**
 
 ```go
-func (s *MyService) AddListenerChans(ch ...chan<- E) {
+func (s *MyService) AddListenerChans(ch ...chan<- Event) {
     s.listeners.AddListenerChans(ch...)
 }
 ```
