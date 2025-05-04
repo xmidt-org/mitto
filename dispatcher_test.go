@@ -40,14 +40,11 @@ func (suite *DispatcherTestSuite[E, D]) newTestListener() *testListener[E] {
 	}
 }
 
-func (suite *DispatcherTestSuite[E, D]) newTestListeners(n int) (tests []*testListener[E], toAdd []Listener[E]) {
+func (suite *DispatcherTestSuite[E, D]) newTestListeners(n int) (tests []*testListener[E]) {
 	tests = make([]*testListener[E], n)
-	toAdd = make([]Listener[E], n)
 
 	for i := 0; i < n; i++ {
-		tl := suite.newTestListener()
-		tests[i] = tl
-		toAdd[i] = tl
+		tests[i] = suite.newTestListener()
 	}
 
 	return
@@ -136,20 +133,20 @@ func (suite *DispatcherTestSuite[E, D]) TestEmpty() {
 func (suite *DispatcherTestSuite[E, D]) TestAddListeners() {
 	for _, count := range []int{1, 2, 5} {
 		suite.Run(fmt.Sprintf("count=%d", count), func() {
-			tests, toAdd := suite.newTestListeners(count)
+			tests := suite.newTestListeners(count)
 			d := suite.factory()
 
-			d.AddListeners(toAdd...)
+			AddListeners(d, tests...)
 			suite.resetTestListeners(tests)
 			d.Send(suite.testEvent)
 			suite.assertTestListenersCalled(tests)
 
-			d.RemoveListeners(toAdd...)
+			RemoveListeners(d, tests...)
 			suite.resetTestListeners(tests)
 			d.Send(suite.testEvent)
 			suite.assertTestListenersNotCalled(tests)
 
-			d.AddListeners(toAdd...)
+			AddListeners(d, tests...)
 			d.Clear()
 			suite.resetTestListeners(tests)
 			d.Send(suite.testEvent)
