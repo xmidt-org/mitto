@@ -10,6 +10,12 @@ SPDX-FileCopyrightText = "SPDX-FileCopyrightText: 2025 Comcast Cable Communicati
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
+path = ".golangci.yml"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "SPDX-FileCopyrightText: 2025 Comcast Cable Communications Management, LLC"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
 path = ".gitignore"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "SPDX-FileCopyrightText: 2025 Comcast Cable Communications Management, LLC"
