@@ -162,6 +162,14 @@ func (suite *DispatcherTestSuite[E, D]) TestAddListeners() {
 			suite.resetTestListeners(tests)
 			d.Send(suite.testEvent)
 			suite.assertTestListenersNotCalled(tests)
+
+			// check that nils are skipped
+			AddListeners[E, Listener[E]](d, nil, nil)
+			AddListeners(d, tests...)
+			AddListeners[E, Listener[E]](d, nil, nil)
+			suite.resetTestListeners(tests)
+			d.Send(suite.testEvent)
+			suite.assertTestListenersCalled(tests)
 		})
 	}
 }
@@ -181,6 +189,20 @@ func (suite *DispatcherTestSuite[E, D]) TestAddListenerFuncs() {
 			suite.resetTestListeners(tests)
 			d.Send(suite.testEvent)
 			suite.assertTestListenersNotCalled(tests)
+
+			// check that nils are skipped
+			toAdd = append(
+				append(
+					[]func(E){nil},
+					toAdd...,
+				),
+				nil,
+			)
+
+			d.AddListenerFuncs(toAdd...)
+			suite.resetTestListeners(tests)
+			d.Send(suite.testEvent)
+			suite.assertTestListenersCalled(tests)
 		})
 	}
 }
@@ -198,6 +220,19 @@ func (suite *DispatcherTestSuite[E, D]) TestAddListenerChans() {
 			d.Clear()
 			d.Send(suite.testEvent)
 			suite.assertTestListenerChansNotCalled(tests)
+
+			// check that nils are skipped
+			toAdd = append(
+				append(
+					[]chan<- E{nil},
+					toAdd...,
+				),
+				nil,
+			)
+
+			d.AddListenerChans(toAdd...)
+			d.Send(suite.testEvent)
+			suite.assertTestListenerChansCalled(tests)
 		})
 	}
 }
