@@ -5,7 +5,7 @@ package mitto
 
 import "sync"
 
-// SyncListeners is a Dispatcher backed by a slice of Listeners that is safe
+// SyncListeners is a Dispatcher backed by a slice of Listener and is safe
 // for concurrent access. A SyncListeners must not be copied after creation.
 //
 // The zero value for this type is ready to use.
@@ -14,7 +14,7 @@ type SyncListeners[E any] struct {
 	listeners Listeners[E]
 }
 
-// Clear atomically removes all listeners.
+// Clear removes all listeners. Send will block until this method completes.
 func (sl *SyncListeners[E]) Clear() {
 	sl.lock.Lock()
 	sl.listeners.Clear()
