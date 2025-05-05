@@ -6,28 +6,28 @@ package mitto
 import "fmt"
 
 func ExampleListeners_AddListeners() {
-	var l Listeners[int] // int is just an example, this could be a struct
-	l.AddListeners(
-		AsListener(func(event int) {
+	var ls Listeners[int] // int is just an example, this could be a struct
+	ls.AddListeners(
+		AsListener[int](func(event int) {
 			fmt.Println(event)
 		}),
 	)
 
-	l.Send(999)
+	ls.Send(999)
 
 	// Output:
 	// 999
 }
 
 func ExampleSyncListeners_AddListeners() {
-	var l SyncListeners[int] // int is just an example, this could be a struct
-	l.AddListeners(
-		AsListener(func(event int) {
+	var ls SyncListeners[int] // int is just an example, this could be a struct
+	ls.AddListeners(
+		AsListener[int](func(event int) {
 			fmt.Println(event)
 		}),
 	)
 
-	l.Send(999)
+	ls.Send(999)
 
 	// Output:
 	// 999

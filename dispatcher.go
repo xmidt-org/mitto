@@ -20,18 +20,6 @@ type Dispatcher[E any] interface {
 	// Listener[E] interface cannot be passed to RemoveListeners.
 	AddListeners(...Listener[E])
 
-	// AddListenerFuncs is a convenience for adding closures as listeners.
-	// None of the closures added via this method can be removed later.
-	// If later removal is needed, use AsListener to create a Listener and
-	// add it via AddListeners.
-	AddListenerFuncs(...func(E))
-
-	// AddListenerChans is a convenience for adding channels as listeners.
-	// None of the channels added via this method can be removed later.
-	// If later removal is needed, cast the channels to a ListenerChan and
-	// add them via AddListeners.
-	AddListenerChans(...chan<- E)
-
 	// RemoveListeners removes listeners from this dispatcher. Only listeners
 	// that are comparable may be removed. In particular, closure types which
 	// implement Listener[E] cannot be used with this method.

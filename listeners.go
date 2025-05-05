@@ -33,32 +33,6 @@ func (ls *Listeners[E]) AddListeners(toAdd ...Listener[E]) {
 	}
 }
 
-// AddListenerFuncs adds listener closures to this set. Any nil
-// closures are skipped.
-func (ls *Listeners[E]) AddListenerFuncs(toAdd ...func(E)) {
-	ls.all = slices.Grow(ls.all, len(toAdd))
-	for _, f := range toAdd {
-		if f != nil {
-			ls.all = append(ls.all,
-				AsListener(f),
-			)
-		}
-	}
-}
-
-// AddListenerChans adds listener channels to this set. Any nil
-// channels are skipped.
-func (ls *Listeners[E]) AddListenerChans(toAdd ...chan<- E) {
-	ls.all = slices.Grow(ls.all, len(toAdd))
-	for _, c := range toAdd {
-		if c != nil {
-			ls.all = append(ls.all,
-				ListenerChan[E](c),
-			)
-		}
-	}
-}
-
 // RemoveListeners deletes the given listeners. Nil listeners and listeners
 // that are not part of this set are ignored.
 func (ls *Listeners[E]) RemoveListeners(toRemove ...Listener[E]) {

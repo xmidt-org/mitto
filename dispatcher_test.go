@@ -50,31 +50,6 @@ func (suite *DispatcherTestSuite[E, D]) newTestListeners(n int) (tests []*testLi
 	return
 }
 
-func (suite *DispatcherTestSuite[E, D]) newTestListenerFuncs(n int) (tests []*testListener[E], toAdd []func(E)) {
-	tests = make([]*testListener[E], n)
-	toAdd = make([]func(E), n)
-
-	for i := 0; i < n; i++ {
-		tl := suite.newTestListener()
-		tests[i] = tl
-		toAdd[i] = tl.OnEvent
-	}
-
-	return
-}
-
-func (suite *DispatcherTestSuite[E, D]) newTestListenerChans(n int) (tests []chan E, toAdd []chan<- E) {
-	tests = make([]chan E, n)
-	toAdd = make([]chan<- E, n)
-
-	for i := 0; i < n; i++ {
-		tests[i] = make(chan E, 1)
-		toAdd[i] = tests[i]
-	}
-
-	return
-}
-
 func (suite *DispatcherTestSuite[E, D]) resetTestListeners(tests []*testListener[E]) {
 	for _, tl := range tests {
 		tl.called = false
@@ -94,38 +69,12 @@ func (suite *DispatcherTestSuite[E, D]) assertTestListenersNotCalled(tests []*te
 	}
 }
 
-func (suite *DispatcherTestSuite[E, D]) assertTestListenerChansCalled(tests []chan E) {
-	for i, ch := range tests {
-		select {
-		case actual := <-ch:
-			suite.Equal(suite.testEvent, actual)
-
-		default:
-			suite.Failf("failed to send event on a test channel", "channel at index [%d]", i)
-		}
-	}
-}
-
-func (suite *DispatcherTestSuite[E, D]) assertTestListenerChansNotCalled(tests []chan E) {
-	for i, ch := range tests {
-		select {
-		case <-ch:
-			suite.Failf("unexpected event on a test channel", "channel at index [%d]", i)
-
-		default:
-			// passing
-		}
-	}
-}
-
 func (suite *DispatcherTestSuite[E, D]) TestEmpty() {
 	d := suite.factory()
 
 	// all of the following should be nops
 	d.Clear()
 	d.AddListeners()
-	d.AddListenerFuncs()
-	d.AddListenerChans()
 	d.RemoveListeners()
 	d.Send(suite.testEvent)
 }
@@ -170,69 +119,6 @@ func (suite *DispatcherTestSuite[E, D]) TestAddListeners() {
 			suite.resetTestListeners(tests)
 			d.Send(suite.testEvent)
 			suite.assertTestListenersCalled(tests)
-		})
-	}
-}
-
-func (suite *DispatcherTestSuite[E, D]) TestAddListenerFuncs() {
-	for _, count := range []int{1, 2, 5} {
-		suite.Run(fmt.Sprintf("count=%d", count), func() {
-			tests, toAdd := suite.newTestListenerFuncs(count)
-			d := suite.factory()
-
-			d.AddListenerFuncs(toAdd...)
-			suite.resetTestListeners(tests)
-			d.Send(suite.testEvent)
-			suite.assertTestListenersCalled(tests)
-
-			d.Clear()
-			suite.resetTestListeners(tests)
-			d.Send(suite.testEvent)
-			suite.assertTestListenersNotCalled(tests)
-
-			// check that nils are skipped
-			toAdd = append(
-				append(
-					[]func(E){nil},
-					toAdd...,
-				),
-				nil,
-			)
-
-			d.AddListenerFuncs(toAdd...)
-			suite.resetTestListeners(tests)
-			d.Send(suite.testEvent)
-			suite.assertTestListenersCalled(tests)
-		})
-	}
-}
-
-func (suite *DispatcherTestSuite[E, D]) TestAddListenerChans() {
-	for _, count := range []int{1, 2, 5} {
-		suite.Run(fmt.Sprintf("count=%d", count), func() {
-			tests, toAdd := suite.newTestListenerChans(count)
-			d := suite.factory()
-
-			d.AddListenerChans(toAdd...)
-			d.Send(suite.testEvent)
-			suite.assertTestListenerChansCalled(tests)
-
-			d.Clear()
-			d.Send(suite.testEvent)
-			suite.assertTestListenerChansNotCalled(tests)
-
-			// check that nils are skipped
-			toAdd = append(
-				append(
-					[]chan<- E{nil},
-					toAdd...,
-				),
-				nil,
-			)
-
-			d.AddListenerChans(toAdd...)
-			d.Send(suite.testEvent)
-			suite.assertTestListenerChansCalled(tests)
 		})
 	}
 }
