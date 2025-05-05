@@ -5,7 +5,8 @@ package mitto
 
 import "slices"
 
-// Listeners is a Dispatcher backed by a simple slice of Listeners.
+// Listeners is a Dispatcher backed by a simple slice of Listeners. The zero
+// value for this type is ready to use.
 //
 // A Listeners is not safe for concurrent use. This type can be used
 // in situations where concurrent safety is guaranteed by containing code

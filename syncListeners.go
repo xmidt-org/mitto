@@ -7,6 +7,8 @@ import "sync"
 
 // SyncListeners is a Dispatcher backed by a slice of Listeners that is safe
 // for concurrent access. A SyncListeners must not be copied after creation.
+//
+// The zero value for this type is ready to use.
 type SyncListeners[E any] struct {
 	lock      sync.RWMutex
 	listeners Listeners[E]
