@@ -40,17 +40,17 @@ type MyListener interface {
 }
 
 type MyService struct {
-    // could also use mitto.Listeners if concurrency is
+    // could also use mitto.Set if concurrency is
     // managed by MyService or some other means.
-    listeners mitto.SyncListeners[Event]
+    listeners mitto.SyncSet[Event]
 }
 
-func (s *MyService) AddListeners(l ...MyListener) {
-    mitto.AddListeners(&s.listeners, l...)
+func (s *MyService) Add(l ...MyListener) {
+    mitto.Add(&s.listeners, l...)
 }
 
-func (s *MyService) RemoveListeners(l ...MyListener) {
-    mitto.RemoveListeners(&s.listeners, l...)
+func (s *MyService) Remove(l ...MyListener) {
+    mitto.Remove(&s.listeners, l...)
 }
 
 func (s *MyService) DoSomething() {
@@ -69,7 +69,7 @@ func (s *MyService) DoSomething() {
 f := func(event Event) { /* ... */ }
 ch := make(chan Event, 10)
 
-s.AddListeners(
+s.listeners.Add(
     mitto.AsListener[Event](f),
     mitto.AsListener[Event](ch),
 )
@@ -82,10 +82,10 @@ A client is responsible for ensuring that a channel is properly managed to reduc
 ```go
 ch := make(chan Event, 10)
 l := AsListener[Event](ch)
-s.AddListeners(l)
+s.listeners.Add(l)
 
 // remove the listener BEFORE closing the channel
-s.RemoveListeners(l)
+s.listeners.Remove(l)
 close(ch)
 ```
 
@@ -99,7 +99,7 @@ type DifferentListener interface {
 }
 
 func (s *MyService) AddDifferentListener(l DifferentListener) {
-    s.listeners.AddListeners(
+    s.listeners.Add(
         mitto.AsListener[Event](
             l.OnStartEvent,
         ),
