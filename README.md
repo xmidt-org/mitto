@@ -69,7 +69,7 @@ func (s *MyService) DoSomething() {
 f := func(event Event) { /* ... */ }
 ch := make(chan Event, 10)
 
-s.Add(
+s.listeners.Add(
     mitto.AsListener[Event](f),
     mitto.AsListener[Event](ch),
 )
@@ -82,10 +82,10 @@ A client is responsible for ensuring that a channel is properly managed to reduc
 ```go
 ch := make(chan Event, 10)
 l := AsListener[Event](ch)
-s.Add(l)
+s.listeners.Add(l)
 
 // remove the listener BEFORE closing the channel
-s.Remove(l)
+s.listeners.Remove(l)
 close(ch)
 ```
 
