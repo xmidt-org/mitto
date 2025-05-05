@@ -16,66 +16,66 @@ type Dispatcher[E any] interface {
 	// Clear removes all listeners from this dispatcher.
 	Clear()
 
-	// AddListeners adds listeners to this Dispatcher.
+	// Add adds listeners to this Dispatcher.
 	//
 	// A caller must take care to ensure that any added listener that
 	// could be removed later should be comparable. In particular, functions
 	// in golang are NOT comparable. Thus, a function that implements the
-	// Listener[E] interface cannot be passed to RemoveListeners.
-	AddListeners(...Listener[E])
+	// Listener[E] interface cannot be passed to Remove.
+	Add(...Listener[E])
 
-	// RemoveListeners removes listeners from this dispatcher. Only listeners
+	// Remove removes listeners from this dispatcher. Only listeners
 	// that are comparable may be removed. In particular, closure types which
 	// implement Listener[E] cannot be used with this method.
-	RemoveListeners(...Listener[E])
+	Remove(...Listener[E])
 
 	// Send dispatches the event to all listeners currently associated
 	// with this dispatcher.
 	Send(E)
 }
 
-// AddListeners adds custom listeners to a dispatcher. The custom listener type
+// Add adds custom listeners to a dispatcher. The custom listener type
 // can be anything that implements Listener[E], rather than being exactly Listener[E].
-func AddListeners[E any, L Listener[E]](d Dispatcher[E], ls ...L) {
+func Add[E any, L Listener[E]](d Dispatcher[E], ls ...L) {
 	switch len(ls) {
 	case 0:
 		// do nothing
 
 	case 1:
 		// simple optimization
-		d.AddListeners(ls[0])
+		d.Add(ls[0])
 
 	default:
 		// we want to make adding a chunk of listeners atomic in the
-		// case where AddListeners is synchronized
+		// case where Add is synchronized
 		more := make([]Listener[E], len(ls))
 		for i, l := range ls {
 			more[i] = l
 		}
 
-		d.AddListeners(more...)
+		d.Add(more...)
 	}
 }
 
-// RemoveListeners removes custom listeners from a dispatcher. The custom listener type
+// Remove removes custom listeners from a dispatcher. The custom listener type
 // can be anything that implements Listener[E], rather than being exactly Listener[E].
-func RemoveListeners[E any, L Listener[E]](d Dispatcher[E], ls ...L) {
+func Remove[E any, L Listener[E]](d Dispatcher[E], ls ...L) {
 	switch len(ls) {
 	case 0:
 		// do nothing
 
 	case 1:
 		// simple optimization
-		d.RemoveListeners(ls[0])
+		d.Remove(ls[0])
 
 	default:
 		// we want to make adding a chunk of listeners atomic in the
-		// case where AddListeners is synchronized
+		// case where Remove is synchronized
 		more := make([]Listener[E], len(ls))
 		for i, l := range ls {
 			more[i] = l
 		}
 
-		d.RemoveListeners(more...)
+		d.Remove(more...)
 	}
 }

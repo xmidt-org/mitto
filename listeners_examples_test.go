@@ -5,9 +5,9 @@ package mitto
 
 import "fmt"
 
-func ExampleListeners_AddListeners() {
+func ExampleListeners_Add() {
 	var ls Listeners[int] // int is just an example, this could be a struct
-	ls.AddListeners(
+	ls.Add(
 		AsListener[int](func(event int) {
 			fmt.Println(event)
 		}),
@@ -19,9 +19,9 @@ func ExampleListeners_AddListeners() {
 	// 999
 }
 
-func ExampleSyncListeners_AddListeners() {
+func ExampleSyncListeners_Add() {
 	var ls SyncListeners[int] // int is just an example, this could be a struct
-	ls.AddListeners(
+	ls.Add(
 		AsListener[int](func(event int) {
 			fmt.Println(event)
 		}),

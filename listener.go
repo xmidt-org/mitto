@@ -34,7 +34,7 @@ func (a *listenerChanAdaptor[E]) OnEvent(e E) { a.ch <- e }
 
 // AsListener converts a Sink into a Listener. If the supplied sink is nil,
 // this function returns nil. The returned Listener is always comparable and can
-// be passed to Dispatcher.RemoveListeners.
+// be passed to Dispatcher.Remove.
 //
 // For channels, the returned listener will block if the underlying channel blocks.
 // Clients must create and manage channels to reduce or avoid blocking. Additionally,

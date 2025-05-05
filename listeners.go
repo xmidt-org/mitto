@@ -23,12 +23,12 @@ func (ls *Listeners[E]) Clear() {
 	ls.all = ls.all[:0]
 }
 
-// AddListeners appends listeners to this set. Any nil listeners
+// Add appends listeners to this set. Any nil listeners
 // are skipped.
 //
 // AsListener can be used to convert closures and channels into
 // listeners to pass to this method.
-func (ls *Listeners[E]) AddListeners(toAdd ...Listener[E]) {
+func (ls *Listeners[E]) Add(toAdd ...Listener[E]) {
 	ls.all = slices.Grow(ls.all, len(toAdd))
 	for _, nl := range toAdd {
 		if nl != nil {
@@ -37,9 +37,9 @@ func (ls *Listeners[E]) AddListeners(toAdd ...Listener[E]) {
 	}
 }
 
-// RemoveListeners deletes the given listeners. Nil listeners and listeners
+// Remove deletes the given listeners. Nil listeners and listeners
 // that are not part of this set are ignored.
-func (ls *Listeners[E]) RemoveListeners(toRemove ...Listener[E]) {
+func (ls *Listeners[E]) Remove(toRemove ...Listener[E]) {
 	for _, r := range toRemove {
 		if p := slices.Index(ls.all, r); p >= 0 {
 			last := len(ls.all) - 1

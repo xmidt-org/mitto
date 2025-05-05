@@ -74,52 +74,52 @@ func (suite *DispatcherTestSuite[E, D]) TestEmpty() {
 
 	// all of the following should be nops
 	d.Clear()
-	d.AddListeners()
-	d.RemoveListeners()
+	d.Add()
+	d.Remove()
 	d.Send(suite.testEvent)
 }
 
-func (suite *DispatcherTestSuite[E, D]) testAddListenersEmpty() {
+func (suite *DispatcherTestSuite[E, D]) testAddEmpty() {
 	var tests []*testListener[E]
 	d := suite.factory()
 
-	AddListeners(d, tests...) // should add nothing
+	Add(d, tests...) // should add nothing
 	d.Send(suite.testEvent)
 
-	RemoveListeners(d, tests...)
+	Remove(d, tests...)
 	d.Send(suite.testEvent)
 }
 
-func (suite *DispatcherTestSuite[E, D]) testAddListenersLifecycle(count int) {
+func (suite *DispatcherTestSuite[E, D]) testAddLifecycle(count int) {
 	tests := suite.newTestListeners(count)
 	d := suite.factory()
 
-	AddListeners(d, tests...)
+	Add(d, tests...)
 	suite.resetTestListeners(tests)
 	d.Send(suite.testEvent)
 	suite.assertTestListenersCalled(tests)
 
-	RemoveListeners(d, tests...)
+	Remove(d, tests...)
 	suite.resetTestListeners(tests)
 	d.Send(suite.testEvent)
 	suite.assertTestListenersNotCalled(tests)
 
-	AddListeners(d, tests...)
+	Add(d, tests...)
 	d.Clear()
 	suite.resetTestListeners(tests)
 	d.Send(suite.testEvent)
 	suite.assertTestListenersNotCalled(tests)
 
 	// check that nils are skipped
-	AddListeners[E, Listener[E]](d, nil, nil)
-	AddListeners(d, tests...)
-	AddListeners[E, Listener[E]](d, nil, nil)
+	Add[E, Listener[E]](d, nil, nil)
+	Add(d, tests...)
+	Add[E, Listener[E]](d, nil, nil)
 	suite.resetTestListeners(tests)
 	d.Send(suite.testEvent)
 	suite.assertTestListenersCalled(tests)
 }
 
-func (suite *DispatcherTestSuite[E, D]) tesetAddListenersRemoveSinks() {
+func (suite *DispatcherTestSuite[E, D]) tesetAddRemoveSinks() {
 	var (
 		f = func(E) {
 			suite.Fail("closure should not have received an event")
@@ -137,8 +137,8 @@ func (suite *DispatcherTestSuite[E, D]) tesetAddListenersRemoveSinks() {
 		d = suite.factory()
 	)
 
-	d.AddListeners(toAdd...)
-	d.RemoveListeners(toAdd...)
+	d.Add(toAdd...)
+	d.Remove(toAdd...)
 	d.Send(suite.testEvent)
 
 	select {
@@ -158,14 +158,14 @@ func (suite *DispatcherTestSuite[E, D]) tesetAddListenersRemoveSinks() {
 	}
 }
 
-func (suite *DispatcherTestSuite[E, D]) TestAddListeners() {
-	suite.Run("Empty", suite.testAddListenersEmpty)
+func (suite *DispatcherTestSuite[E, D]) TestAdd() {
+	suite.Run("Empty", suite.testAddEmpty)
 
 	for _, count := range []int{1, 2, 5} {
 		suite.Run(fmt.Sprintf("count=%d", count), func() {
-			suite.testAddListenersLifecycle(count)
+			suite.testAddLifecycle(count)
 		})
 	}
 
-	suite.Run("RemoveSinks", suite.tesetAddListenersRemoveSinks)
+	suite.Run("RemoveSinks", suite.tesetAddRemoveSinks)
 }

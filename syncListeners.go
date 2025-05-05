@@ -21,19 +21,19 @@ func (sl *SyncListeners[E]) Clear() {
 	sl.lock.Unlock()
 }
 
-// AddListeners adds more listeners. This method ensures that no event can be sent
+// Add adds more listeners. This method ensures that no event can be sent
 // until adding these listeners completes.
-func (sl *SyncListeners[E]) AddListeners(toAdd ...Listener[E]) {
+func (sl *SyncListeners[E]) Add(toAdd ...Listener[E]) {
 	sl.lock.Lock()
-	sl.listeners.AddListeners(toAdd...)
+	sl.listeners.Add(toAdd...)
 	sl.lock.Unlock()
 }
 
-// RemoveListeners removes the given listeners. This method ensures that no event
+// Remove removes the given listeners. This method ensures that no event
 // can be sent until removing these listeners completes.
-func (sl *SyncListeners[E]) RemoveListeners(toRemove ...Listener[E]) {
+func (sl *SyncListeners[E]) Remove(toRemove ...Listener[E]) {
 	sl.lock.Lock()
-	sl.listeners.RemoveListeners(toRemove...)
+	sl.listeners.Remove(toRemove...)
 	sl.lock.Unlock()
 }
 
