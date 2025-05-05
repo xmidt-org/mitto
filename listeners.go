@@ -22,28 +22,45 @@ func (ls *Listeners[E]) Clear() {
 	ls.all = ls.all[:0]
 }
 
+// AddListeners appends listeners to this set. Any nil listeners
+// are skipped.
 func (ls *Listeners[E]) AddListeners(toAdd ...Listener[E]) {
-	ls.all = append(ls.all, toAdd...)
+	ls.all = slices.Grow(ls.all, len(toAdd))
+	for _, nl := range toAdd {
+		if nl != nil {
+			ls.all = append(ls.all, nl)
+		}
+	}
 }
 
+// AddListenerFuncs adds listener closures to this set. Any nil
+// closures are skipped.
 func (ls *Listeners[E]) AddListenerFuncs(toAdd ...func(E)) {
 	ls.all = slices.Grow(ls.all, len(toAdd))
 	for _, f := range toAdd {
-		ls.all = append(ls.all,
-			AsListener(f),
-		)
+		if f != nil {
+			ls.all = append(ls.all,
+				AsListener(f),
+			)
+		}
 	}
 }
 
+// AddListenerChans adds listener channels to this set. Any nil
+// channels are skipped.
 func (ls *Listeners[E]) AddListenerChans(toAdd ...chan<- E) {
 	ls.all = slices.Grow(ls.all, len(toAdd))
 	for _, c := range toAdd {
-		ls.all = append(ls.all,
-			ListenerChan[E](c),
-		)
+		if c != nil {
+			ls.all = append(ls.all,
+				ListenerChan[E](c),
+			)
+		}
 	}
 }
 
+// RemoveListeners deletes the given listeners. Nil listeners and listeners
+// that are not part of this set are ignored.
 func (ls *Listeners[E]) RemoveListeners(toRemove ...Listener[E]) {
 	for _, r := range toRemove {
 		if p := slices.Index(ls.all, r); p >= 0 {
