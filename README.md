@@ -61,7 +61,7 @@ func (s *MyService) DoSomething() {
 }
 ```
 
-## AsListener
+### AsListener
 
 `mitto` provides `AsListener` to convert other common types into listeners.
 
@@ -75,7 +75,7 @@ s.listeners.Add(
 )
 ```
 
-### Important note on channels
+#### Important note on channels
 
 A client is responsible for ensuring that a channel is properly managed to reduce or avoid blocking. In addition, a client must remove the channel listener *before* closing the channel, otherwise `Send` may panic.
 
@@ -89,7 +89,7 @@ s.listeners.Remove(l)
 close(ch)
 ```
 
-## Adapting custom Listener interfaces
+### Adapting custom Listener interfaces
 
 `AsListener` can also be used to adapt a different listener interface or type.
 
