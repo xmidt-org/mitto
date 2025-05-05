@@ -6,6 +6,10 @@ package mitto
 // Dispatcher is the common interface for anything which can manage a
 // collection of Listeners and dispatch events to them.
 //
+// A Dispatcher does not guarantee any ordering for listeners. In particular,
+// the order in which listeners were added is not necessarily the order in
+// which they will be called.
+//
 // A Dispatcher implementation must be safe for concurrent access. Any
 // of the methods on this interface may be called concurrently at any time.
 type Dispatcher[E any] interface {
@@ -19,18 +23,6 @@ type Dispatcher[E any] interface {
 	// in golang are NOT comparable. Thus, a function that implements the
 	// Listener[E] interface cannot be passed to RemoveListeners.
 	AddListeners(...Listener[E])
-
-	// AddListenerFuncs is a convenience for adding closures as listeners.
-	// None of the closures added via this method can be removed later.
-	// If later removal is needed, use AsListener to create a Listener and
-	// add it via AddListeners.
-	AddListenerFuncs(...func(E))
-
-	// AddListenerChans is a convenience for adding channels as listeners.
-	// None of the channels added via this method can be removed later.
-	// If later removal is needed, cast the channels to a ListenerChan and
-	// add them via AddListeners.
-	AddListenerChans(...chan<- E)
 
 	// RemoveListeners removes listeners from this dispatcher. Only listeners
 	// that are comparable may be removed. In particular, closure types which

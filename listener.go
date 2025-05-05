@@ -3,6 +3,8 @@
 
 package mitto
 
+import "reflect"
+
 // Listener is a sink for events.
 type Listener[E any] interface {
 	// OnEvent allows this listener to receive the given event.
@@ -13,34 +15,65 @@ type Listener[E any] interface {
 	OnEvent(E)
 }
 
-// ListenerFunc is a type constraint for closures which can act as Listeners.
-type ListenerFunc[E any] interface {
-	~func(E)
+// Sink is a constraint for types that can be used as Listeners.
+type Sink[E any] interface {
+	~func(E) | ~chan E | ~chan<- E
 }
 
-type listenerFuncAdaptor[E any, F ListenerFunc[E]] struct {
-	f F
+type listenerFuncAdaptor[E any] struct {
+	fn func(E)
 }
 
-func (a *listenerFuncAdaptor[E, F]) OnEvent(e E) { a.f(e) }
+func (a *listenerFuncAdaptor[E]) OnEvent(e E) { a.fn(e) }
 
-// AsListener converts a closure into a Listener.
+type listenerChanAdaptor[E any] struct {
+	ch chan<- E
+}
+
+func (a *listenerChanAdaptor[E]) OnEvent(e E) { a.ch <- e }
+
+// AsListener converts a Sink into a Listener. If the supplied sink is nil,
+// this function returns nil. The returned Listener is always comparable and can
+// be passed to Dispatcher.RemoveListeners.
 //
-// Use of this function is optional, as closures can be added to a Dispatcher directly.
-// However, functions are not comparable in golang. Thus, if a caller adds a closure
-// to a Dispatcher directly, it cannot be removed because the == operator
-// isn't defined for functions. Using AsListener gives a caller a comparable
-// Listener that can be removed from a Dispatcher at a future time.
-func AsListener[E any, F ListenerFunc[E]](f F) Listener[E] {
-	return &listenerFuncAdaptor[E, F]{
-		f: f,
+// For channels, the returned listener will block if the underlying channel blocks.
+// Clients must create and manage channels to reduce or avoid blocking. Additionally,
+// if a client wants to close the channel, care must be taken to remove it first
+// to avoid panics.
+func AsListener[E any, S Sink[E]](sink S) Listener[E] {
+	if sink == nil {
+		return nil
+	}
+
+	// fast conversions for simple types
+	switch st := any(sink).(type) {
+	case func(E):
+		return &listenerFuncAdaptor[E]{fn: st}
+	case chan E:
+		return &listenerChanAdaptor[E]{ch: st}
+	case chan<- E:
+		return &listenerChanAdaptor[E]{ch: st}
+	}
+
+	// for custom types, use conversions through reflection
+	sv := reflect.ValueOf(sink)
+
+	ftype := reflect.TypeOf((func(E))(nil))
+	if sv.CanConvert(ftype) {
+		return &listenerFuncAdaptor[E]{
+			fn: sv.Convert(ftype).Interface().(func(E)),
+		}
+	}
+
+	chtype := reflect.TypeOf((chan E)(nil))
+	if sv.CanConvert(chtype) {
+		return &listenerChanAdaptor[E]{
+			ch: sv.Convert(chtype).Interface().(chan E),
+		}
+	}
+
+	sendtype := reflect.TypeOf((chan<- E)(nil))
+	return &listenerChanAdaptor[E]{
+		ch: sv.Convert(sendtype).Interface().(chan<- E),
 	}
 }
-
-// ListenerChan is a channel type that can act as a Listener.
-type ListenerChan[E any] chan<- E
-
-// OnEvent puts the event onto the channel. This method will block
-// as long as it takes to send the event to the channel. Clients should
-// manage channels to reduce or avoid blocking.
-func (lc ListenerChan[E]) OnEvent(e E) { lc <- e }
