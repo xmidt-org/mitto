@@ -15,7 +15,7 @@ type Listener[E any] interface {
 	OnEvent(E)
 }
 
-// Sink is a type constraint for types that can be used as Listeners.
+// Sink is a constraint for types that can be used as Listeners.
 type Sink[E any] interface {
 	~func(E) | ~chan E | ~chan<- E
 }

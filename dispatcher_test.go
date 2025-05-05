@@ -79,46 +79,93 @@ func (suite *DispatcherTestSuite[E, D]) TestEmpty() {
 	d.Send(suite.testEvent)
 }
 
+func (suite *DispatcherTestSuite[E, D]) testAddListenersEmpty() {
+	var tests []*testListener[E]
+	d := suite.factory()
+
+	AddListeners(d, tests...) // should add nothing
+	d.Send(suite.testEvent)
+
+	RemoveListeners(d, tests...)
+	d.Send(suite.testEvent)
+}
+
+func (suite *DispatcherTestSuite[E, D]) testAddListenersLifecycle(count int) {
+	tests := suite.newTestListeners(count)
+	d := suite.factory()
+
+	AddListeners(d, tests...)
+	suite.resetTestListeners(tests)
+	d.Send(suite.testEvent)
+	suite.assertTestListenersCalled(tests)
+
+	RemoveListeners(d, tests...)
+	suite.resetTestListeners(tests)
+	d.Send(suite.testEvent)
+	suite.assertTestListenersNotCalled(tests)
+
+	AddListeners(d, tests...)
+	d.Clear()
+	suite.resetTestListeners(tests)
+	d.Send(suite.testEvent)
+	suite.assertTestListenersNotCalled(tests)
+
+	// check that nils are skipped
+	AddListeners[E, Listener[E]](d, nil, nil)
+	AddListeners(d, tests...)
+	AddListeners[E, Listener[E]](d, nil, nil)
+	suite.resetTestListeners(tests)
+	d.Send(suite.testEvent)
+	suite.assertTestListenersCalled(tests)
+}
+
+func (suite *DispatcherTestSuite[E, D]) tesetAddListenersRemoveSinks() {
+	var (
+		f = func(E) {
+			suite.Fail("closure should not have received an event")
+		}
+
+		ch1 = make(chan E, 1)
+		ch2 = make(chan E, 1)
+
+		toAdd = []Listener[E]{
+			AsListener[E](f),
+			AsListener[E](ch1),
+			AsListener[E]((chan<- E)(ch2)),
+		}
+
+		d = suite.factory()
+	)
+
+	d.AddListeners(toAdd...)
+	d.RemoveListeners(toAdd...)
+	d.Send(suite.testEvent)
+
+	select {
+	case <-ch1:
+		suite.Fail("should not have received an event on a channel")
+
+	default:
+		// passing
+	}
+
+	select {
+	case <-ch2:
+		suite.Fail("should not have received an event on a send-only channel")
+
+	default:
+		// passing
+	}
+}
+
 func (suite *DispatcherTestSuite[E, D]) TestAddListeners() {
-	suite.Run("Empty", func() {
-		var tests []*testListener[E]
-		d := suite.factory()
-
-		AddListeners(d, tests...) // should add nothing
-		d.Send(suite.testEvent)
-
-		RemoveListeners(d, tests...)
-		d.Send(suite.testEvent)
-	})
+	suite.Run("Empty", suite.testAddListenersEmpty)
 
 	for _, count := range []int{1, 2, 5} {
 		suite.Run(fmt.Sprintf("count=%d", count), func() {
-			tests := suite.newTestListeners(count)
-			d := suite.factory()
-
-			AddListeners(d, tests...)
-			suite.resetTestListeners(tests)
-			d.Send(suite.testEvent)
-			suite.assertTestListenersCalled(tests)
-
-			RemoveListeners(d, tests...)
-			suite.resetTestListeners(tests)
-			d.Send(suite.testEvent)
-			suite.assertTestListenersNotCalled(tests)
-
-			AddListeners(d, tests...)
-			d.Clear()
-			suite.resetTestListeners(tests)
-			d.Send(suite.testEvent)
-			suite.assertTestListenersNotCalled(tests)
-
-			// check that nils are skipped
-			AddListeners[E, Listener[E]](d, nil, nil)
-			AddListeners(d, tests...)
-			AddListeners[E, Listener[E]](d, nil, nil)
-			suite.resetTestListeners(tests)
-			d.Send(suite.testEvent)
-			suite.assertTestListenersCalled(tests)
+			suite.testAddListenersLifecycle(count)
 		})
 	}
+
+	suite.Run("RemoveSinks", suite.tesetAddListenersRemoveSinks)
 }
