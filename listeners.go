@@ -24,6 +24,9 @@ func (ls *Listeners[E]) Clear() {
 
 // AddListeners appends listeners to this set. Any nil listeners
 // are skipped.
+//
+// AsListener can be used to convert closures and channels into
+// listeners to pass to this method.
 func (ls *Listeners[E]) AddListeners(toAdd ...Listener[E]) {
 	ls.all = slices.Grow(ls.all, len(toAdd))
 	for _, nl := range toAdd {

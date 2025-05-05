@@ -24,6 +24,8 @@ sends events to clients, where clients supply one or more listeners.
 
 ## Usage
 
+### Basic
+
 The easiest way to use `mitto` is to include it in a type that manages events and listeners:
 
 ```go
@@ -59,26 +61,37 @@ func (s *MyService) DoSomething() {
 }
 ```
 
-`mitto` allows closures to be used as event sinks.
+## AsListener
+
+`mitto` provides `AsListener` to convert other common types into listeners.
 
 ```go
-func (s *MyService) AddListenerFuncs(l ...func(Event)) {
-    s.listeners.AddListenerFuncs(l...)
-}
+f := func(event Event) { /* ... */ }
+ch := make(chan Event, 10)
+
+s.AddListeners(
+    mitto.AsListener[Event](f),
+    mitto.AsListener[Event](ch),
+)
 ```
 
-When using closures, remember that `golang` does not allow comparisons between functions. That means that you can't remove a listener closure later. For cases where a listener closure needs to be removed at some point, `mitto` provides `AsListener` to convert a closure into a comparable `Listener`.
+### Important note on channels
+
+A client is responsible for ensuring that a channel is properly managed to reduce or avoid blocking. In addition, a client must remove the channel listener *before* closing the channel, otherwise `Send` may panic.
 
 ```go
-l := mitto.AsListener(func(Event) {})
-s := new(MyService)
+ch := make(chan Event, 10)
+l := AsListener[Event](ch)
 s.AddListeners(l)
 
-// this will now work
+// remove the listener BEFORE closing the channel
 s.RemoveListeners(l)
+close(ch)
 ```
 
-`AsListener` can also be used to adapt a different listener interface.
+## Adapting custom Listener interfaces
+
+`AsListener` can also be used to adapt a different listener interface or type.
 
 ```go
 type DifferentListener interface {
@@ -87,18 +100,10 @@ type DifferentListener interface {
 
 func (s *MyService) AddDifferentListener(l DifferentListener) {
     s.listeners.AddListeners(
-        mitto.AsListener(
+        mitto.AsListener[Event](
             l.OnStartEvent,
         ),
     )
-}
-```
-
-`mitto` also allows channel-based listeners. **Clients are responsible for creating and managing channels to avoid blocking.**
-
-```go
-func (s *MyService) AddListenerChans(ch ...chan<- Event) {
-    s.listeners.AddListenerChans(ch...)
 }
 ```
 
