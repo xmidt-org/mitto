@@ -40,9 +40,9 @@ type MyListener interface {
 }
 
 type MyService struct {
-    // could also use mitto.Listeners if concurrency is
+    // could also use mitto.Set if concurrency is
     // managed by MyService or some other means.
-    listeners mitto.SyncListeners[Event]
+    listeners mitto.SyncSet[Event]
 }
 
 func (s *MyService) Add(l ...MyListener) {

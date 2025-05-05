@@ -5,22 +5,23 @@ package mitto
 
 import "slices"
 
-// Listeners is a Dispatcher backed by a simple slice of Listener. The zero
+// Set is a Dispatcher backed by a simple slice of Listener. The zero
 // value for this type is ready to use.
 //
-// A Listeners is not safe for concurrent use. This type can be used
+// A Set is not safe for concurrent use. This type can be used
 // in situations where concurrent safety is guaranteed by containing code
 // or where concurrency isn't an issue.
-type Listeners[E any] struct {
+type Set[E any] struct {
 	all []Listener[E]
 }
 
-func (ls *Listeners[E]) Clear() {
-	for i := range len(ls.all) {
-		ls.all[i] = nil
+// Clear removes all listeners from this set.
+func (s *Set[E]) Clear() {
+	for i := range len(s.all) {
+		s.all[i] = nil
 	}
 
-	ls.all = ls.all[:0]
+	s.all = s.all[:0]
 }
 
 // Add appends listeners to this set. Any nil listeners
@@ -28,31 +29,31 @@ func (ls *Listeners[E]) Clear() {
 //
 // AsListener can be used to convert closures and channels into
 // listeners to pass to this method.
-func (ls *Listeners[E]) Add(toAdd ...Listener[E]) {
-	ls.all = slices.Grow(ls.all, len(toAdd))
+func (s *Set[E]) Add(toAdd ...Listener[E]) {
+	s.all = slices.Grow(s.all, len(toAdd))
 	for _, nl := range toAdd {
 		if nl != nil {
-			ls.all = append(ls.all, nl)
+			s.all = append(s.all, nl)
 		}
 	}
 }
 
 // Remove deletes the given listeners. Nil listeners and listeners
 // that are not part of this set are ignored.
-func (ls *Listeners[E]) Remove(toRemove ...Listener[E]) {
+func (s *Set[E]) Remove(toRemove ...Listener[E]) {
 	for _, r := range toRemove {
-		if p := slices.Index(ls.all, r); p >= 0 {
-			last := len(ls.all) - 1
-			ls.all[p], ls.all[last] = ls.all[last], nil
-			ls.all = ls.all[:last]
+		if p := slices.Index(s.all, r); p >= 0 {
+			last := len(s.all) - 1
+			s.all[p], s.all[last] = s.all[last], nil
+			s.all = s.all[:last]
 		}
 	}
 }
 
 // Send dispatches an event to all contained listeners. Listener implementations
 // should be prepared to receive events concurrently.
-func (ls *Listeners[E]) Send(e E) {
-	for _, l := range ls.all {
+func (s *Set[E]) Send(e E) {
+	for _, l := range s.all {
 		l.OnEvent(e)
 	}
 }

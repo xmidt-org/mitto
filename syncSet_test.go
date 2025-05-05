@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-func TestSyncListeners(t *testing.T) {
-	suite.Run(t, &DispatcherTestSuite[int, *SyncListeners[int]]{
-		factory:   func() *SyncListeners[int] { return new(SyncListeners[int]) },
+func TestSyncSet(t *testing.T) {
+	suite.Run(t, &DispatcherTestSuite[int, *SyncSet[int]]{
+		factory:   func() *SyncSet[int] { return new(SyncSet[int]) },
 		testEvent: 123,
 	})
 }
