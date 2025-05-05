@@ -6,6 +6,10 @@ package mitto
 // Dispatcher is the common interface for anything which can manage a
 // collection of Listeners and dispatch events to them.
 //
+// A Dispatcher does not guarantee any ordering for listeners. In particular,
+// the order in which listeners were added is not necessarily the order in
+// which they will be called.
+//
 // A Dispatcher implementation must be safe for concurrent access. Any
 // of the methods on this interface may be called concurrently at any time.
 type Dispatcher[E any] interface {
