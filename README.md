@@ -78,6 +78,22 @@ s.AddListeners(l)
 s.RemoveListeners(l)
 ```
 
+`AsListener` can also be used to adapt a different listener interface.
+
+```go
+type DifferentListener interface {
+    OnStartEvent(Event)
+}
+
+func (s *MyService) AddDifferentListener(l DifferentListener) {
+    s.listeners.AddListeners(
+        mitto.AsListener(
+            l.OnStartEvent,
+        ),
+    )
+}
+```
+
 `mitto` also allows channel-based listeners. **Clients are responsible for creating and managing channels to avoid blocking.**
 
 ```go
